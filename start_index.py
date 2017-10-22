@@ -1,27 +1,85 @@
 from bs4 import BeautifulSoup
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 import requests
 import csv, ujson
 import utils, custom, config
 
-DEBUG = True
+DEBUG = False
 
 INDEX = "house"
 TYPE_NAME = "house"
 
+DEFAULT_INDEX_URL = "https://www.redfin.com/city/17420/CA/San-Jose/filter/property-type=house+condo+townhouse+multifamily,max-price=700k"
+TEMP_FILENAME = "tmp.csv"
+
 class Downloader:
-    def __init__(self, index_url):
+    def __init__(self, index_url=DEFAULT_INDEX_URL):
         self.index = index_url
+        self.headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+
 
     def start_download(self):
-        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        result_html = requests.get(self.index, headers=headers)
-        soup = BeautifulSoup(result_html.content.decode('utf-8'), 'html.parser')
-        download_url = "https://www.redfin.com" + soup.select("#download-and-save")[0].get('href')
+        if not DEBUG:
+            self.download_list()
 
-        response = urlopen(download_url)
-        return next(csv.DictReader(response, fieldnames=custom.HOUSE_FIELDS))
+        return self.get_list()
+
+
+    def download_fees(self, h_list):
+        """
+        Download fees from detail page
+        h_list: OrderDict
+        """
+        for row in h_list:
+            retrieve_details = {
+                { "total": ("", "") },
+                { "tax": ("", "") },
+            }
+            required_fields = self._get_fields(row["url"], retrieve_details)
+
+
+    def download_list(self):
+        """
+        Download a list of house as csv file
+        """
+        required_fields = self._get_fields(self.index, {"download_url": ("#download-and-save", "href")})
+        download_url = "https://www.redfin.com" + required_fields["download_url"][0]
+
+        req_info = Request(download_url, None, self.headers)
+        response = urlopen(req_info).read().decode('utf-8')
+        wf = open(TEMP_FILENAME, 'w')
+        wf.write(response)
+        wf.close()
+
+
+    def get_list(self):
+        csv_file = "test.csv" if DEBUG else "tmp.csv"
+        return CSVUtils().genObjects(csv_file)
+
+
+    def _retreive(self, e, rtype):
+        if rtype == "href":
+            return e.get("href")
+        elif rtype == "text":
+            return e.text
+        else:
+            return e
+
+
+    def _get_fields(self, url, required_fields):
+        """
+        This will extract the data by css selector.
+        required_fields: Dict { key_that_return : (css_selector, type) }
+        return: list of object ({ string: list })
+        """
+        result_html = requests.get(self.index, headers=self.headers)
+        soup = BeautifulSoup(result_html.content.decode('utf-8'), 'html.parser')
+
+        values = {}
+        for k, (selector, rtype) in required_fields.items():
+            values[k] = [self._retreive(e, rtype) for e in soup.select(selector)]
+        return values
 
 
 class Indexer:
@@ -45,6 +103,7 @@ class Indexer:
             h_json = ujson.dumps(h_odict)
             response = requests.post("%s/%s/%s" % (config.ELASTICSEARCH_URL, INDEX, TYPE_NAME), h_json, headers=config.HEADERS)
             print(response.content)
+            break
 
 
 class CSVUtils:
@@ -55,14 +114,7 @@ class CSVUtils:
 
 
 if __name__ == "__main__":
-    house_list = None
-    if DEBUG:
-        csv_file = "test.csv"
-        house_list = CSVUtils().genObjects(csv_file)
-    else:
-        default_index_url = "https://www.redfin.com/city/17420/CA/San-Jose/filter/property-type=house+condo+townhouse+multifamily,max-price=700k"
-        downloader = Downloader(default_index_url)
-        house_list = downloader.start_download()
+    house_list = Downloader().start_download()
 
     indexer = Indexer(house_list)
     indexer.start_indexing()
