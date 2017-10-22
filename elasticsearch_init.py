@@ -6,6 +6,9 @@ class ElasticInitializer:
     def __init__(self):
         self.host = "http://localhost:9200"
 
+    '''
+    Configure Elasticsearch Settings. For now, it only has one shard
+    '''
     def create_index(self):
         headers = {
             "Content-Type": "application/json"
@@ -18,19 +21,19 @@ class ElasticInitializer:
         print(response.status_code)
         print(response.content)
 
-    def update_mapping(self):
+    def update_mapping(self, type_name):
         headers = {
             "Content-Type": "application/json"
         }
         payload = ujson.dumps({
-            "mappings": config.HOUSE_MAPPINGS
+            "properties": config.HOUSE_MAPPINGS[type_name]["properties"]
         })
         index_name = "house"
-        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, "house"), headers=headers, data=payload)
+        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, type_name), headers=headers, data=payload)
         print(response.status_code)
         print(response.content)
 
 if __name__=="__main__":
     ei = ElasticInitializer()
-    #ei.create_index()
-    ei.update_mapping()
+    ei.create_index()
+    ei.update_mapping("house")
