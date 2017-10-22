@@ -26,7 +26,7 @@ class ElasticInitializer:
             "mappings": config.HOUSE_MAPPINGS
         })
         index_name = "house"
-        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, config.HOUSE_MAPPINGS.keys[0]), headers=headers, data=payload)
+        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, "house"), headers=headers, data=payload)
         print(response.status_code)
         print(response.content)
 

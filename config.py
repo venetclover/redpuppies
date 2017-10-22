@@ -58,7 +58,7 @@ HOUSE_MAPPINGS = {
             },
             "longitude": {
                 "type": "double"
-            }'''
+            }
         }
     }
 }
