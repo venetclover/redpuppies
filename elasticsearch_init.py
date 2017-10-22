@@ -12,14 +12,25 @@ class ElasticInitializer:
         }
         payload = ujson.dumps({
             "settings": config.SETTINGS,
-            "mappings": config.HOUSE_MAPPINGS
         })
         index_name = "house"
         response = requests.put("%s/%s" % (self.host, index_name), headers=headers, data=payload)
         print(response.status_code)
         print(response.content)
 
+    def update_mapping(self):
+        headers = {
+            "Content-Type": "application/json"
+        }
+        payload = ujson.dumps({
+            "mappings": config.HOUSE_MAPPINGS
+        })
+        index_name = "house"
+        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, config.HOUSE_MAPPINGS.keys[0]), headers=headers, data=payload)
+        print(response.status_code)
+        print(response.content)
 
 if __name__=="__main__":
     ei = ElasticInitializer()
-    ei.create_index()
+    #ei.create_index()
+    ei.update_mapping()
