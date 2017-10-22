@@ -1,3 +1,9 @@
+ELASTICSEARCH_URL = "http://localhost:9200"
+
+HEADERS = {
+    "Content-Type": "application/json"
+}
+
 SETTINGS = {
     "number_of_shards": 1
 }
@@ -53,12 +59,9 @@ HOUSE_MAPPINGS = {
             "status": {
                 "type": "text"
             },
-            "latitude": {
-                "type": "double"
+            "location": {
+                "type": "geo_point"
             },
-            "longitude": {
-                "type": "double"
-            }
         }
     }
 }

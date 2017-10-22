@@ -10,14 +10,11 @@ class ElasticInitializer:
     Configure Elasticsearch Settings. For now, it only has one shard
     '''
     def create_index(self):
-        headers = {
-            "Content-Type": "application/json"
-        }
         payload = ujson.dumps({
             "settings": config.SETTINGS,
         })
         index_name = "house"
-        response = requests.put("%s/%s" % (self.host, index_name), headers=headers, data=payload)
+        response = requests.put("%s/%s" % (self.host, index_name), headers=config.HEADERS, data=payload)
         print(response.status_code)
         print(response.content)
 
@@ -29,7 +26,12 @@ class ElasticInitializer:
             "properties": config.HOUSE_MAPPINGS[type_name]["properties"]
         })
         index_name = "house"
-        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, type_name), headers=headers, data=payload)
+        response = requests.put("%s/%s/_mapping/%s" % (self.host, index_name, type_name), headers=config.HEADERS, data=payload)
+        print(response.status_code)
+        print(response.content)
+
+    def delete_index(self, index_name):
+        response = requests.delete("%s/%s" % (self.host, index_name), headers=config.HEADERS)
         print(response.status_code)
         print(response.content)
 
