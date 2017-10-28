@@ -23,20 +23,31 @@ class Downloader:
         if not DEBUG:
             self.download_list()
 
-        return self.get_list()
+        csv_list = self.get_list()
+        # csv_list = self.get_more_details(csv_list)
+        return csv_list
 
 
-    def download_fees(self, h_list):
+    def get_more_details(self, h_list):
         """
         Download fees from detail page
         h_list: OrderDict
         """
-        for row in h_list:
+
+        # Get monthly expense details
+        for ind, row in enumerate(h_list):
             retrieve_details = {
-                { "total": ("", "") },
-                { "tax": ("", "") },
+                "total": (".MortgageCalculatorSummary .major-part .title", "text"),
+                "subtitle": (".MortgageCalculatorSummary .dot-value-row .title", "text"),
+                "subvalues": (".MortgageCalculatorSummary .dot-value-row .value", "text")
             }
-            required_fields = self._get_fields(row["url"], retrieve_details)
+            required_fields = self._get_delayed_fields(row["url"], retrieve_details)
+            fees = {}
+            fees["monthly_total"] = required_fields["total"][0] if required_fields["total"] else "0"
+            for t, v in zip(retrieve_details["subtitle"], retrieve_details["subvalues"]):
+                fees[t] = v
+
+        return h_list
 
 
     def download_list(self):
@@ -59,6 +70,7 @@ class Downloader:
 
 
     def _retreive(self, e, rtype):
+        import pdb; pdb.set_trace()
         if rtype == "href":
             return e.get("href")
         elif rtype == "text":
@@ -73,13 +85,19 @@ class Downloader:
         required_fields: Dict { key_that_return : (css_selector, type) }
         return: list of object ({ string: list })
         """
-        result_html = requests.get(self.index, headers=self.headers)
+        result_html = requests.get(url, headers=self.headers)
         soup = BeautifulSoup(result_html.content.decode('utf-8'), 'html.parser')
-
         values = {}
         for k, (selector, rtype) in required_fields.items():
+            import pdb; pdb.set_trace()
             values[k] = [self._retreive(e, rtype) for e in soup.select(selector)]
         return values
+
+    def _get_delayed_fields(self, url, required_fields):
+        """
+        Should use PhantomJS to take a screen shot
+        """
+        pass
 
 
 class Indexer:
