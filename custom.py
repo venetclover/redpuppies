@@ -10,7 +10,7 @@ HOUSE_FIELDS = [
     'bed',
     'bath',
     'area',
-    'size',
+    'internal_size',
     'lot_size',
     'year_built',
     'days_of_market',

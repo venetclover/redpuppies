@@ -5,9 +5,9 @@ import requests
 import csv, ujson
 import utils, custom, config
 
-DEBUG = False
+DEBUG = True
 
-INDEX = "house"
+INDEX = "houses_development"
 TYPE_NAME = "house"
 
 DEFAULT_INDEX_URL = "https://www.redfin.com/city/17420/CA/San-Jose/filter/property-type=house+condo+townhouse+multifamily,max-price=700k"
@@ -89,7 +89,6 @@ class Downloader:
         soup = BeautifulSoup(result_html.content.decode('utf-8'), 'html.parser')
         values = {}
         for k, (selector, rtype) in required_fields.items():
-            import pdb; pdb.set_trace()
             values[k] = [self._retreive(e, rtype) for e in soup.select(selector)]
         return values
 
@@ -121,7 +120,6 @@ class Indexer:
             h_json = ujson.dumps(h_odict)
             response = requests.post("%s/%s/%s" % (config.ELASTICSEARCH_URL, INDEX, TYPE_NAME), h_json, headers=config.HEADERS)
             print(response.content)
-            break
 
 
 class CSVUtils:

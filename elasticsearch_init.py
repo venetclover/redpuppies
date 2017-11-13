@@ -52,5 +52,5 @@ class ElasticInitializer:
 
 if __name__=="__main__":
     ei = ElasticInitializer()
-    ei.create_index("house")
-    ei.update_mapping("house", "house")
+    ei.create_index("houses_development")
+    ei.update_mapping("houses_development", "house")

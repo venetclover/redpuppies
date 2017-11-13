@@ -23,7 +23,7 @@ HOUSE_MAPPINGS = {
             "price": {
                 "type": "long"
             },
-            "size": {
+            "internal_size": {
                 "type": "double"
             },
             "house_type": {
