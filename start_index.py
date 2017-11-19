@@ -117,6 +117,11 @@ class Indexer:
             del h_odict["city"]
             del h_odict["state"]
             del h_odict["zip"]
+
+            h_odict["suggest"] = {
+                "input": h_odict["title"].lower().split(' ') + h_odict["title"].upper().split(' ') + h_odict["title"].title().split(' '),
+                "weight" : 3
+            }
             h_json = ujson.dumps(h_odict)
             response = requests.post("%s/%s/%s" % (config.ELASTICSEARCH_URL, INDEX, TYPE_NAME), h_json, headers=config.HEADERS)
             print(response.content)

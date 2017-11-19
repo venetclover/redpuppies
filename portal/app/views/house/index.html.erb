@@ -1,0 +1,57 @@
+<div style="width=700px; text-align: center;">
+
+  <h1>Houses</h1>
+  <div>
+    <form>
+      Search: <input type="text" id="search_for" name="search_for" style="width: 500px; height: 20px">
+    </form>
+  </div>
+
+  <% @house.each do |result| %>
+    <div style="display: block; text-align: left; float: center">
+      <h4><%= result["title"] %></h4>
+      <table style="width:50%; inline-block;">
+        <tr>
+          <th>Beds</th>
+          <th><%= result["bed"] %></th>
+        </tr>
+        <tr>
+          <th>Baths</th>
+          <th><%= result["bath"] %></th>
+        </tr>
+        <tr>
+          <th>House Type</th>
+          <th><%= result["house_type"] %></th>
+        </tr>
+        <tr>
+          <th>Price</th>
+          <th><%= result["price"] %></th>
+        </tr>
+        <tr>
+          <th>URL</th>
+          <th><a href="<%= result["url"] %>" ><%= result["url"] %></a></th>
+        </tr>
+      </table>
+    </div>
+  <% end %>
+</div>
+
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous">
+</script>
+<script src="http://twitter.github.io/typeahead.js/releases/latest/typeahead.bundle.min.js"></script>
+<script>
+  var houses = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.whitespace,
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    remote: {
+      url: '/house/autocomplete?query=%QUERY',
+      wildcard: '%QUERY'
+    }
+  });
+  $('#search_for').typeahead(null, {
+    source: houses
+  });
+</script>

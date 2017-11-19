@@ -38,6 +38,9 @@ HOUSE_MAPPINGS = {
             "HOA": {
                 "type": "integer"
             },
+            "suggest" : {
+                "type" : "completion"
+            },
             "address": {
                 "properties": {
                     "state": {"type": "text"},
